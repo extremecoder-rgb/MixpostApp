@@ -33,18 +33,18 @@ RUN mkdir -p bootstrap/cache \
     storage/framework/views \
     storage/framework/cache
 
-# Copy the default .env
+# Copy .env example
 RUN cp .env.example .env
 
-# Set correct environment values inside container
-RUN echo "APP_ENV=production" >> .env \
- && echo "APP_DEBUG=false" >> .env \
- && echo "DB_CONNECTION=sqlite" >> .env \
- && echo "DB_DATABASE=/var/www/html/storage/database.sqlite" >> .env \
- && echo "SESSION_DRIVER=file" >> .env \
- && echo "QUEUE_CONNECTION=database" >> .env \
- && echo "FILESYSTEM_DISK=local" >> .env \
- && echo "CACHE_DRIVER=file" >> .env
+# Append correct environment settings
+RUN printf "\nAPP_ENV=production" >> .env \
+ && printf "\nAPP_DEBUG=false" >> .env \
+ && printf "\nDB_CONNECTION=sqlite" >> .env \
+ && printf "\nDB_DATABASE=/var/www/html/storage/database.sqlite" >> .env \
+ && printf "\nSESSION_DRIVER=file" >> .env \
+ && printf "\nQUEUE_CONNECTION=database" >> .env \
+ && printf "\nFILESYSTEM_DISK=local" >> .env \
+ && printf "\nCACHE_DRIVER=file" >> .env
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
@@ -52,7 +52,7 @@ RUN composer install --no-dev --optimize-autoloader
 # Set permissions
 RUN chmod -R 777 storage bootstrap/cache
 
-# Clear cached config BEFORE generating key
+# Clear config cache
 RUN php artisan config:clear
 
 # Generate APP_KEY
@@ -68,8 +68,6 @@ RUN php artisan migrate --force || true
 # Link storage
 RUN php artisan storage:link || true
 
-# Expose Render port
 EXPOSE 8080
 
-# Start Laravel server
 CMD php artisan serve --host=0.0.0.0 --port=8080
